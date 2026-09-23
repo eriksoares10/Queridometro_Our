@@ -2,7 +2,10 @@ import streamlit as st
 from supabase import create_client
 from datetime import datetime
 
+
+# ============================================================
 # CONFIGURAÇÃO
+# ============================================================
 
 st.set_page_config(
     page_title="Queridômetro da Rep",
@@ -10,49 +13,45 @@ st.set_page_config(
     layout="centered"
 )
 
+
+# ============================================================
 # IDENTIDADE VISUAL DA OUR
+# ============================================================
 
 st.markdown("""
-    .morador-card {
-        background: #1D241F;
-        border-left: 5px solid #F47B20;
-        border-radius: 12px;
-        padding: 14px 18px;
-        margin-top: 10px;
-        margin-bottom: 8px;
-    }
-
-    .morador-nome {
-        color: #FFFFFF;
-        font-size: 20px;
-        font-weight: 700;
-    }
+<style>
 
     /* FUNDO */
     .stApp {
         background-color: #101412;
     }
 
-    /* TÍTULOS */
+
+    /* TÍTULO PRINCIPAL */
     h1 {
         color: #F47B20 !important;
         font-weight: 800 !important;
         letter-spacing: 1px;
     }
 
+
+    /* OUTROS TÍTULOS */
     h2, h3 {
         color: #F5F5F5 !important;
     }
 
-    /* TEXTO */
+
+    /* TEXTOS */
     p, label {
         color: #E8E8E8 !important;
     }
+
 
     /* DIVISÓRIAS */
     hr {
         border-color: #2E3A32 !important;
     }
+
 
     /* BOTÃO PRINCIPAL */
     .stButton > button {
@@ -66,11 +65,13 @@ st.markdown("""
         transition: 0.2s;
     }
 
+
     .stButton > button:hover {
         background-color: #FF963F;
         border: none;
         transform: scale(1.02);
     }
+
 
     /* SELECTBOX */
     div[data-baseweb="select"] > div {
@@ -79,19 +80,44 @@ st.markdown("""
         border-radius: 10px;
     }
 
-    /* ÁREA DE SENHA */
+
+    /* CAMPO DE SENHA */
     div[data-baseweb="input"] > div {
         background-color: #1D241F;
         border-radius: 10px;
     }
 
-    /* SUCESSO */
+
+    /* CARDS DOS MORADORES */
+    .morador-card {
+        background: #1D241F;
+        border-left: 5px solid #F47B20;
+        border-radius: 12px;
+        padding: 14px 18px;
+        margin-top: 10px;
+        margin-bottom: 8px;
+    }
+
+
+    .morador-nome {
+        color: #FFFFFF;
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+
+    /* MENSAGENS DE SUCESSO/AVISO */
     div[data-testid="stAlert"] {
         border-radius: 12px;
     }
 
 </style>
 """, unsafe_allow_html=True)
+
+
+# ============================================================
+# MORADORES
+# ============================================================
 
 MORADORES = [
     "Leozinho",
@@ -110,6 +136,11 @@ MORADORES = [
     "Shaki",
 ]
 
+
+# ============================================================
+# EMOJIS
+# ============================================================
+
 EMOJIS = {
     "❤️ Coração": "❤️",
     "🥰 Adoro": "🥰",
@@ -123,7 +154,10 @@ EMOJIS = {
     "💣 Bomba": "💣"
 }
 
+
+# ============================================================
 # CONEXÃO COM SUPABASE
+# ============================================================
 
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
@@ -135,7 +169,9 @@ supabase = create_client(
 )
 
 
+# ============================================================
 # SALVAR VOTO
+# ============================================================
 
 def salvar_voto(votante, avaliado, emoji):
 
@@ -155,7 +191,9 @@ def salvar_voto(votante, avaliado, emoji):
     }).execute()
 
 
+# ============================================================
 # INTERFACE
+# ============================================================
 
 st.title("🏠 QUERIDÔMETRO DA OUR")
 
@@ -166,7 +204,9 @@ st.markdown(
 st.divider()
 
 
+# ============================================================
 # IDENTIFICAÇÃO
+# ============================================================
 
 votante = st.selectbox(
     "👤 Quem é você?",
@@ -188,34 +228,49 @@ if votante != "Selecione seu nome":
 
     votos = {}
 
+
+    # ========================================================
+    # VOTAÇÃO
+    # ========================================================
+
     for pessoa in MORADORES:
 
         if pessoa != votante:
 
+            # CARD DO MORADOR
             st.markdown(
-    f"""
-    <div class="morador-card">
-        <div class="morador-nome">👤 {pessoa}</div>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+                f"""
+                <div class="morador-card">
+                    <div class="morador-nome">
+                        👤 {pessoa}
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
+
+            # ESCOLHA DO EMOJI
             escolha = st.radio(
                 f"Como você está com {pessoa}?",
                 ["Não votar"] + list(EMOJIS.keys()),
-                horizontal=False,
+                horizontal=True,
                 key=f"{votante}_{pessoa}"
             )
 
+
+            # GUARDA O VOTO
             if escolha != "Não votar":
 
                 votos[pessoa] = EMOJIS[escolha]
 
+
             st.divider()
 
 
-    # ENVIAR
+    # ========================================================
+    # ENVIAR QUERIDÔMETRO
+    # ========================================================
 
     if st.button(
         "💌 ENVIAR QUERIDÔMETRO",
@@ -238,6 +293,7 @@ if votante != "Selecione seu nome":
                     emoji
                 )
 
+
             st.success(
                 "💌 Seus votos foram registrados!"
             )
@@ -245,7 +301,9 @@ if votante != "Selecione seu nome":
             st.balloons()
 
 
-# RESULTADOS
+# ============================================================
+# ÁREA SECRETA
+# ============================================================
 
 st.divider()
 
@@ -257,9 +315,18 @@ senha = st.text_input(
 )
 
 
+# ============================================================
+# RESULTADOS
+# ============================================================
+
 if senha == SENHA_ADMIN:
 
     st.success("Acesso liberado!")
+
+
+    # --------------------------------------------------------
+    # BUSCA RESULTADOS
+    # --------------------------------------------------------
 
     resposta = (
         supabase
@@ -271,9 +338,12 @@ if senha == SENHA_ADMIN:
     resultados = resposta.data
 
 
-    # RESULTADOS
+    # --------------------------------------------------------
+    # RESULTADO DO QUERIDÔMETRO
+    # --------------------------------------------------------
 
     st.header("🏆 RESULTADO DO QUERIDÔMETRO")
+
 
     for pessoa in MORADORES:
 
@@ -282,9 +352,11 @@ if senha == SENHA_ADMIN:
             if x["avaliado"] == pessoa
         ]
 
+
         st.subheader(
             f"👤 {pessoa}"
         )
+
 
         if len(votos_pessoa) == 0:
 
@@ -296,14 +368,19 @@ if senha == SENHA_ADMIN:
 
             contagem = {}
 
+
             for voto in votos_pessoa:
 
                 emoji = voto["emoji"]
 
+
                 if emoji not in contagem:
+
                     contagem[emoji] = 0
 
+
                 contagem[emoji] += 1
+
 
             for emoji, quantidade in contagem.items():
 
@@ -311,20 +388,30 @@ if senha == SENHA_ADMIN:
                     f"{emoji} × {quantidade}"
                 )
 
+
         st.divider()
 
 
+    # --------------------------------------------------------
     # TODOS OS VOTOS
+    # --------------------------------------------------------
 
     st.header("🕵️ Todos os votos")
+
 
     resposta = (
         supabase
         .table("votos")
-        .select("votante, avaliado, emoji, data, id")
-        .order("id", desc=True)
+        .select(
+            "votante, avaliado, emoji, data, id"
+        )
+        .order(
+            "id",
+            desc=True
+        )
         .execute()
     )
+
 
     todos = resposta.data
 
@@ -336,6 +423,7 @@ if senha == SENHA_ADMIN:
             f"{voto['emoji']} → "
             f"**{voto['avaliado']}**"
         )
+
 
         st.caption(
             voto["data"]
