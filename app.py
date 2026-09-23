@@ -1,5 +1,5 @@
 import streamlit as st
-import sqlite3
+from supabase import create_client
 from datetime import datetime
 
 # CONFIGURAÇÃO
@@ -40,62 +40,36 @@ EMOJIS = {
     "💣 Bomba": "💣"
 }
 
-SENHA_ADMIN = "rep2026"
+# CONEXÃO COM SUPABASE
 
-#BANCO DE DADOS
-def conectar():
-    return sqlite3.connect("queridometro.db")
+SUPABASE_URL = st.secrets["SUPABASE_URL"]
+SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
+SENHA_ADMIN = st.secrets["SENHA_ADMIN"]
 
+supabase = create_client(
+    SUPABASE_URL,
+    SUPABASE_KEY
+)
 
-def criar_banco():
-
-    conexao = conectar()
-    cursor = conexao.cursor()
-
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS votos (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            votante TEXT,
-            avaliado TEXT,
-            emoji TEXT,
-            data TEXT
-        )
-    """)
-
-    conexao.commit()
-    conexao.close()
-
-
-criar_banco()
 
 # SALVAR VOTO
 
 def salvar_voto(votante, avaliado, emoji):
 
-    conexao = conectar()
-    cursor = conexao.cursor()
-
     # Remove voto anterior da pessoa
-    cursor.execute("""
-        DELETE FROM votos
-        WHERE votante = ? AND avaliado = ?
-    """, (votante, avaliado))
+    supabase.table("votos") \
+        .delete() \
+        .eq("votante", votante) \
+        .eq("avaliado", avaliado) \
+        .execute()
 
     # Salva novo voto
-    cursor.execute("""
-        INSERT INTO votos
-        (votante, avaliado, emoji, data)
-        VALUES (?, ?, ?, ?)
-    """, (
-        votante,
-        avaliado,
-        emoji,
-        datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-    ))
-
-    conexao.commit()
-    conexao.close()
-
+    supabase.table("votos").insert({
+        "votante": votante,
+        "avaliado": avaliado,
+        "emoji": emoji,
+        "data": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    }).execute()
 
 
 # INTERFACE
@@ -107,7 +81,6 @@ st.markdown(
 )
 
 st.divider()
-
 
 
 # IDENTIFICAÇÃO
@@ -186,7 +159,6 @@ if votante != "Selecione seu nome":
 
 # RESULTADOS
 
-
 st.divider()
 
 st.header("🔐 Área secreta")
@@ -201,26 +173,17 @@ if senha == SENHA_ADMIN:
 
     st.success("Acesso liberado!")
 
-    conexao = conectar()
-    cursor = conexao.cursor()
+    resposta = (
+        supabase
+        .table("votos")
+        .select("avaliado, emoji")
+        .execute()
+    )
 
-    cursor.execute("""
-        SELECT
-            avaliado,
-            emoji,
-            COUNT(*)
-        FROM votos
-        GROUP BY avaliado, emoji
-        ORDER BY avaliado
-    """)
-
-    resultados = cursor.fetchall()
-
-    conexao.close()
+    resultados = resposta.data
 
 
     # RESULTADOS
-
 
     st.header("🏆 RESULTADO DO QUERIDÔMETRO")
 
@@ -228,7 +191,7 @@ if senha == SENHA_ADMIN:
 
         votos_pessoa = [
             x for x in resultados
-            if x[0] == pessoa
+            if x["avaliado"] == pessoa
         ]
 
         st.subheader(
@@ -243,7 +206,18 @@ if senha == SENHA_ADMIN:
 
         else:
 
-            for _, emoji, quantidade in votos_pessoa:
+            contagem = {}
+
+            for voto in votos_pessoa:
+
+                emoji = voto["emoji"]
+
+                if emoji not in contagem:
+                    contagem[emoji] = 0
+
+                contagem[emoji] += 1
+
+            for emoji, quantidade in contagem.items():
 
                 st.write(
                     f"{emoji} × {quantidade}"
@@ -251,32 +225,30 @@ if senha == SENHA_ADMIN:
 
         st.divider()
 
+
     # TODOS OS VOTOS
 
     st.header("🕵️ Todos os votos")
 
-    conexao = conectar()
-    cursor = conexao.cursor()
+    resposta = (
+        supabase
+        .table("votos")
+        .select("votante, avaliado, emoji, data, id")
+        .order("id", desc=True)
+        .execute()
+    )
 
-    cursor.execute("""
-        SELECT
-            votante,
-            avaliado,
-            emoji,
-            data
-        FROM votos
-        ORDER BY id DESC
-    """)
-
-    todos = cursor.fetchall()
-
-    conexao.close()
+    todos = resposta.data
 
 
-    for votante, avaliado, emoji, data in todos:
+    for voto in todos:
 
         st.write(
-            f"**{votante}** → {emoji} → **{avaliado}**"
+            f"**{voto['votante']}** → "
+            f"{voto['emoji']} → "
+            f"**{voto['avaliado']}**"
         )
 
-        st.caption(data)
+        st.caption(
+            voto["data"]
+        )
