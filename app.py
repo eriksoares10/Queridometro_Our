@@ -10,6 +10,89 @@ st.set_page_config(
     layout="centered"
 )
 
+# IDENTIDADE VISUAL DA OUR
+
+st.markdown("""
+    .morador-card {
+        background: #1D241F;
+        border-left: 5px solid #F47B20;
+        border-radius: 12px;
+        padding: 14px 18px;
+        margin-top: 10px;
+        margin-bottom: 8px;
+    }
+
+    .morador-nome {
+        color: #FFFFFF;
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+    /* FUNDO */
+    .stApp {
+        background-color: #101412;
+    }
+
+    /* TÍTULOS */
+    h1 {
+        color: #F47B20 !important;
+        font-weight: 800 !important;
+        letter-spacing: 1px;
+    }
+
+    h2, h3 {
+        color: #F5F5F5 !important;
+    }
+
+    /* TEXTO */
+    p, label {
+        color: #E8E8E8 !important;
+    }
+
+    /* DIVISÓRIAS */
+    hr {
+        border-color: #2E3A32 !important;
+    }
+
+    /* BOTÃO PRINCIPAL */
+    .stButton > button {
+        background-color: #F47B20;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 20px;
+        font-weight: 800;
+        font-size: 16px;
+        transition: 0.2s;
+    }
+
+    .stButton > button:hover {
+        background-color: #FF963F;
+        border: none;
+        transform: scale(1.02);
+    }
+
+    /* SELECTBOX */
+    div[data-baseweb="select"] > div {
+        background-color: #1D241F;
+        border: 1px solid #F47B20;
+        border-radius: 10px;
+    }
+
+    /* ÁREA DE SENHA */
+    div[data-baseweb="input"] > div {
+        background-color: #1D241F;
+        border-radius: 10px;
+    }
+
+    /* SUCESSO */
+    div[data-testid="stAlert"] {
+        border-radius: 12px;
+    }
+
+</style>
+""", unsafe_allow_html=True)
+
 MORADORES = [
     "Leozinho",
     "John",
@@ -109,14 +192,19 @@ if votante != "Selecione seu nome":
 
         if pessoa != votante:
 
-            st.subheader(
-                f"👤 {pessoa}"
-            )
+            st.markdown(
+    f"""
+    <div class="morador-card">
+        <div class="morador-nome">👤 {pessoa}</div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
             escolha = st.radio(
                 f"Como você está com {pessoa}?",
                 ["Não votar"] + list(EMOJIS.keys()),
-                horizontal=True,
+                horizontal=False,
                 key=f"{votante}_{pessoa}"
             )
 
