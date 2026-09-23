@@ -195,7 +195,7 @@ def salvar_voto(votante, avaliado, emoji):
 # INTERFACE
 # ============================================================
 st.image(
-    "assets/our_stickers.png",
+    "assets./our_stickers.png",
     use_container_width=True
 )
 st.title("🏠 QUERIDÔMETRO DA OUR")
