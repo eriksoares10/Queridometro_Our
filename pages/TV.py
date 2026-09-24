@@ -224,19 +224,7 @@ while True:
 
         for emoji, quantidade in contagem.items():
 
-            emojis_html += f"""
-            <div class="emoji-item">
-
-                <div class="emoji">
-                    {emoji}
-                </div>
-
-                <div class="quantidade">
-                    {quantidade}
-                </div>
-
-            </div>
-            """
+            emojis_html += f"""<div class="emoji-item"><div class="emoji">{emoji}</div><div class="quantidade">{quantidade}</div></div>"""
 
         # ----------------------------------------------------
         # CASO NÃO TENHA VOTOS
@@ -254,26 +242,15 @@ while True:
         # MOSTRA O PARTICIPANTE
         # ----------------------------------------------------
 
-        tela.markdown(
-            f"""
-            <div class="painel">
-
-                <div class="nome">
-                    {pessoa}
-                </div>
-
-                <div class="linha-emojis">
-                    {emojis_html}
-                </div>
-
-                <div class="rodape">
-                    QUERIDÔMETRO DA OUR
-                </div>
-
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+       
+         tela.markdown(
+    f"""<div class="painel">
+<div class="nome">{pessoa}</div>
+<div class="linha-emojis">{emojis_html}</div>
+<div class="rodape">QUERIDÔMETRO DA OUR</div>
+</div>""",
+    unsafe_allow_html=True
+)
 
         # Tempo de exibição de cada participante
         time.sleep(5)
