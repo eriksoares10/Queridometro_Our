@@ -8,13 +8,13 @@ from supabase import create_client
 # ============================================================
 
 st.set_page_config(
-    page_title="Queridômetro da OUR - TV",
+    page_title="Queridômetro da OUR",
     page_icon="🏠",
     layout="wide"
 )
 
 # ============================================================
-# CONEXÃO COM SUPABASE
+# SUPABASE
 # ============================================================
 
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
@@ -47,79 +47,120 @@ MORADORES = [
 ]
 
 # ============================================================
-# CORES / VISUAL
+# CSS
 # ============================================================
 
 st.markdown("""
 <style>
 
 .stApp {
-    background-color: #101412;
+    background: #101412;
 }
 
 .block-container {
     max-width: 1400px;
-    padding-top: 30px;
-    padding-bottom: 30px;
+    padding-top: 25px;
 }
+
+/* TÍTULO */
 
 .titulo {
     text-align: center;
     color: #F47B20;
     font-size: 42px;
     font-weight: 900;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
+    margin-bottom: 5px;
 }
 
 .subtitulo {
     text-align: center;
-    color: #E8E8E8;
-    font-size: 20px;
+    color: #A8C99A;
+    font-size: 18px;
     margin-bottom: 35px;
 }
+
+/* NOME */
 
 .nome {
     text-align: center;
     color: white;
-    font-size: 58px;
+    font-size: 60px;
     font-weight: 900;
+    letter-spacing: 3px;
     margin-top: 15px;
-    margin-bottom: 30px;
+    margin-bottom: 35px;
 }
 
-.emoji-area {
-    background-color: #1D241F;
-    border: 3px solid #F47B20;
-    border-radius: 25px;
-    padding: 35px;
+/* PAINEL */
+
+.painel {
+    background: #1D241F;
+    border: 2px solid #F47B20;
+    border-radius: 30px;
+    padding: 45px;
+    margin: auto;
+    max-width: 1100px;
+    box-shadow: 0px 0px 30px rgba(244,123,32,0.12);
+}
+
+/* EMOJIS */
+
+.linha-emojis {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 55px;
+    flex-wrap: wrap;
+}
+
+.emoji-item {
     text-align: center;
-    min-height: 220px;
+    min-width: 90px;
 }
 
 .emoji {
-    font-size: 70px;
-    margin: 12px;
+    font-size: 65px;
+    line-height: 1;
 }
 
-.contador {
-    text-align: center;
-    color: #A8C99A;
-    font-size: 20px;
-    margin-top: 25px;
+.quantidade {
+    color: white;
+    font-size: 28px;
+    font-weight: 900;
+    margin-top: 12px;
 }
+
+.rotulo {
+    color: #A8C99A;
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+/* SEM VOTOS */
+
+.sem-votos {
+    text-align: center;
+    color: #777;
+    font-size: 25px;
+    padding: 50px;
+}
+
+/* RODAPÉ */
 
 .rodape {
     text-align: center;
-    color: #777777;
-    font-size: 15px;
-    margin-top: 35px;
+    color: #666;
+    font-size: 14px;
+    margin-top: 30px;
+    letter-spacing: 1px;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
 # ============================================================
-# CABEÇALHO
+# TÍTULO
 # ============================================================
 
 st.markdown(
@@ -128,18 +169,18 @@ st.markdown(
 )
 
 st.markdown(
-    '<div class="subtitulo">💌 Como os OURs estão sendo vistos hoje?</div>',
+    '<div class="subtitulo">💌 AO VIVO</div>',
     unsafe_allow_html=True
 )
 
 # ============================================================
-# ESPAÇO DA TELA
+# ÁREA QUE SERÁ ATUALIZADA
 # ============================================================
 
 tela = st.empty()
 
 # ============================================================
-# FUNÇÃO PARA BUSCAR VOTOS
+# BUSCAR VOTOS
 # ============================================================
 
 def buscar_votos():
@@ -155,7 +196,7 @@ def buscar_votos():
 
 
 # ============================================================
-# EXIBIÇÃO
+# LOOP DA TV
 # ============================================================
 
 while True:
@@ -170,77 +211,69 @@ while True:
             if voto["avaliado"] == pessoa
         ]
 
-        emojis = [
+        contagem = Counter(
             voto["emoji"]
             for voto in votos_pessoa
-        ]
+        )
 
-        # Conta quantos recebeu de cada emoji
-        contagem = Counter(emojis)
+        # ----------------------------------------------------
+        # MONTA OS EMOJIS AGRUPADOS
+        # ----------------------------------------------------
 
-        # Cria lista organizada
-        emojis_exibicao = []
+        emojis_html = ""
 
         for emoji, quantidade in contagem.items():
 
-            for _ in range(quantidade):
-                emojis_exibicao.append(emoji)
+            emojis_html += f"""
+            <div class="emoji-item">
+
+                <div class="emoji">
+                    {emoji}
+                </div>
+
+                <div class="quantidade">
+                    {quantidade}
+                </div>
+
+            </div>
+            """
 
         # ----------------------------------------------------
-        # MONTA OS EMOJIS
+        # CASO NÃO TENHA VOTOS
         # ----------------------------------------------------
 
-        if len(emojis_exibicao) == 0:
+        if not emojis_html:
 
             emojis_html = """
-            <div style="
-                color:#777;
-                font-size:28px;
-                padding:50px;
-            ">
+            <div class="sem-votos">
                 Nenhum voto ainda...
             </div>
             """
 
-        else:
-
-            emojis_html = ""
-
-            for emoji in emojis_exibicao:
-
-                emojis_html += f"""
-                <span class="emoji">
-                    {emoji}
-                </span>
-                """
-
         # ----------------------------------------------------
-        # MOSTRA NA TV
+        # MOSTRA O PARTICIPANTE
         # ----------------------------------------------------
 
         tela.markdown(
             f"""
-            <div class="nome">
-                {pessoa}
-            </div>
+            <div class="painel">
 
-            <div class="emoji-area">
-                {emojis_html}
-            </div>
+                <div class="nome">
+                    {pessoa}
+                </div>
 
-            <div class="contador">
-                💌 {len(emojis_exibicao)} voto(s) recebido(s)
-            </div>
+                <div class="linha-emojis">
+                    {emojis_html}
+                </div>
 
-            <div class="rodape">
-                QUERIDÔMETRO DA OUR • AO VIVO
+                <div class="rodape">
+                    QUERIDÔMETRO DA OUR
+                </div>
+
             </div>
             """,
             unsafe_allow_html=True
         )
 
-        # Tempo que cada morador fica na tela
+        # Tempo de exibição de cada participante
         time.sleep(5)
-
-    # Depois de passar por todos,
-    # busca os votos novamente.
