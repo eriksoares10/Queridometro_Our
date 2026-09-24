@@ -243,14 +243,14 @@ while True:
         # ----------------------------------------------------
 
        
-         tela.markdown(
-    f"""<div class="painel">
-<div class="nome">{pessoa}</div>
-<div class="linha-emojis">{emojis_html}</div>
-<div class="rodape">QUERIDÔMETRO DA OUR</div>
-</div>""",
-    unsafe_allow_html=True
-)
+             tela.markdown(
+                f"""<div class="painel">
+                <div class="nome">{pessoa}</div>
+                <div class="linha-emojis">{emojis_html}</div>
+                <div class="rodape">QUERIDÔMETRO DA OUR</div>
+                </div>""",
+                unsafe_allow_html=True
+                )
 
         # Tempo de exibição de cada participante
         time.sleep(5)
